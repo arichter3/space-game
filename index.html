@@ -45,9 +45,13 @@ button {
 <canvas id="myCanvas"></canvas>
 
 <script>
+const VERSION = "v0.06";
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
-
+ctx.fillStyle = "white";
+ctx.font = "16px monospace";
+ctx.textAlign = "right";
+ctx.fillText(VERSION, canvas.width - 10, 20);
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
