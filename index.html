@@ -22,17 +22,6 @@ button {
 
 <canvas id="myCanvas"></canvas>
 
-<div id="controls">
-    <button id="blank">space
-        game</button>
-    <button id="up">▲</button>
-    <div>
-        <button id="left">◀</button>
-        <button id="down">▼</button>
-        <button id="right">▶</button>
-    </div>
-</div>
-
 <script>
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
@@ -49,35 +38,6 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 window.addEventListener("orientationchange", resizeCanvas);
 
-
-
-const touchKeys = {
-    up: false,
-    down: false,
-    left: false,
-    right: false
-};
-
-// helper to bind buttons
-function bindTouch(id, key) {
-    const btn = document.getElementById(id);
-
-    btn.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        touchKeys[key] = true;
-    });
-
-    btn.addEventListener("touchend", (e) => {
-        e.preventDefault();
-        touchKeys[key] = false;
-    });
-}
-
-bindTouch("up", "up");
-bindTouch("down", "down");
-bindTouch("left", "left");
-bindTouch("right", "right");
-
 const keys = {};
 
 // 🎮 input
@@ -87,6 +47,40 @@ window.addEventListener("keydown", (e) => {
 
 window.addEventListener("keyup", (e) => {
     keys[e.key.toLowerCase()] = false;
+});
+
+let isTouching = false;
+let lastTouchX = 0;
+let lastTouchY = 0;
+
+canvas.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    isTouching = true;
+
+    const touch = e.touches[0];
+    lastTouchX = touch.clientX;
+    lastTouchY = touch.clientY;
+});
+
+canvas.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+    if (!isTouching) return;
+
+    const touch = e.touches[0];
+
+    const dx = touch.clientX - lastTouchX;
+    const dy = touch.clientY - lastTouchY;
+
+    // move camera opposite to drag (feels natural)
+    camera.x -= dx * 0.5;
+    camera.y -= dy * 0.5;
+
+    lastTouchX = touch.clientX;
+    lastTouchY = touch.clientY;
+});
+
+canvas.addEventListener("touchend", () => {
+    isTouching = false;
 });
 
 // 🌌 world size (wrap boundary)
@@ -129,10 +123,10 @@ function wrapCamera() {
 
 function update() {
     // keyboard
-    if (keys["w"] || keys["arrowup"] || touchKeys.up) camera.y -= camera.speed;
-    if (keys["s"] || keys["arrowdown"] || touchKeys.down) camera.y += camera.speed;
-    if (keys["a"] || keys["arrowleft"] || touchKeys.left) camera.x -= camera.speed;
-    if (keys["d"] || keys["arrowright"] || touchKeys.right) camera.x += camera.speed;
+    if (keys["w"] || keys["arrowup"]) camera.y -= camera.speed;
+    if (keys["s"] || keys["arrowdown"]) camera.y += camera.speed;
+    if (keys["a"] || keys["arrowleft"]) camera.x -= camera.speed;
+    if (keys["d"] || keys["arrowright"]) camera.x += camera.speed;
 
     wrapCamera();
 }
