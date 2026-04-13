@@ -61,9 +61,12 @@ function resizeCanvas() {
     ship.y = canvas.height - 80;
 }
 
-window.addEventListener("resize", resizeCanvas);
-window.addEventListener("orientationchange", resizeCanvas);
+function handleResize() {
+    setTimeout(resizeCanvas, 100); // wait for screen to settle
+}
 
+window.addEventListener("resize", handleResize);
+window.addEventListener("orientationchange", handleResize);
 const keys = {};
 
 // 🎮 input
