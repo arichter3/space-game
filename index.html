@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<!-- 2D infinite space: camera wraps, stars stay in world -->
+<html>
+<body style="background-color:#003;">
+
+<style>
+#controls {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    user-select: none;
+}
+
+button {
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
+    margin: 5px;
+}
+</style>   
+
+<canvas id="myCanvas" width="960" height="340" style="border:1px solid white;">
+Your browser cannot run this canvas application.
+</canvas>
+
+<div id="controls">
+    <button id="up">▲</button>
+    <div>
+        <button id="left">◀</button>
+        <button id="down">▼</button>
+        <button id="right">▶</button>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById("myCanvas");
+const ctx = canvas.getContext("2d");
+
+const touchKeys = {
+    up: false,
+    down: false,
+    left: false,
+    right: false
+};
+
+// helper to bind buttons
+function bindTouch(id, key) {
+    const btn = document.getElementById(id);
+
+    btn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        touchKeys[key] = true;
+    });
+
+    btn.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        touchKeys[key] = false;
+    });
+}
+
+bindTouch("up", "up");
+bindTouch("down", "down");
+bindTouch("left", "left");
+bindTouch("right", "right");
+
+const keys = {};
+
+// 🎮 input
+window.addEventListener("keydown", (e) => {
+    keys[e.key.toLowerCase()] = true;
+});
+
+window.addEventListener("keyup", (e) => {
+    keys[e.key.toLowerCase()] = false;
+});
+
+// 🌌 world size (wrap boundary)
+const WORLD_SIZE = 2000;
+
+// 🎮 camera (this moves through space)
+const camera = {
+    x: 0,
+    y: 0,
+    speed: 3
+};
+
+// 🚀 fixed ship (HUD style)
+const ship = {
+    x: canvas.width / 2 - 25,
+    y: canvas.height - 80,
+    size: 50
+};
+
+// ⭐ stars in world space
+const STAR_COUNT = 100;
+const stars = [];
+
+for (let i = 0; i < STAR_COUNT; i++) {
+    stars.push({
+        x: Math.random() * WORLD_SIZE - WORLD_SIZE / 2,
+        y: Math.random() * WORLD_SIZE - WORLD_SIZE / 2,
+        size: 1 + Math.random() * 2
+    });
+}
+
+// 🔄 wrap camera so space never ends
+function wrapCamera() {
+    if (camera.x < -WORLD_SIZE / 2) camera.x = WORLD_SIZE / 2;
+    if (camera.x > WORLD_SIZE / 2) camera.x = -WORLD_SIZE / 2;
+
+    if (camera.y < -WORLD_SIZE / 2) camera.y = WORLD_SIZE / 2;
+    if (camera.y > WORLD_SIZE / 2) camera.y = -WORLD_SIZE / 2;
+}
+
+function update() {
+    // keyboard
+    if (keys["w"] || keys["arrowup"] || touchKeys.up) camera.y -= camera.speed;
+    if (keys["s"] || keys["arrowdown"] || touchKeys.down) camera.y += camera.speed;
+    if (keys["a"] || keys["arrowleft"] || touchKeys.left) camera.x -= camera.speed;
+    if (keys["d"] || keys["arrowright"] || touchKeys.right) camera.x += camera.speed;
+
+    wrapCamera();
+}
+
+function render() {
+    // clear screen
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // ⭐ draw stars relative to camera
+    ctx.fillStyle = "white";
+
+   for (let star of stars) {
+    let dx = star.x - camera.x;
+    let dy = star.y - camera.y;
+
+    // wrap into a repeating space (no snapping)
+    dx = ((dx + WORLD_SIZE) % WORLD_SIZE) - WORLD_SIZE / 2;
+    dy = ((dy + WORLD_SIZE) % WORLD_SIZE) - WORLD_SIZE / 2;
+
+    const screenX = dx + canvas.width / 2;
+    const screenY = dy + canvas.height / 2;
+
+    ctx.fillRect(screenX, screenY, star.size, star.size);
+}
+
+    // 🚀 ship (fixed HUD position)
+    ctx.fillStyle = "red";
+    ctx.fillRect(ship.x, ship.y, ship.size, ship.size);
+}
+
+function gameLoop() {
+    update();
+    render();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>
