@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <!-- 2D infinite space: camera wraps, stars stay in world -->
 <html>
-<body style="background-color:#003;">
-
+<head><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"></head>
+<body style="margin:0; overflow:hidden; background:#003;">
 <style>
 #controls {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    z-index: 10;
     user-select: none;
 }
 
@@ -19,9 +20,7 @@ button {
 }
 </style>   
 
-<canvas id="myCanvas" width="960" height="340" style="border:1px solid white;">
-Your browser cannot run this canvas application.
-</canvas>
+<canvas id="myCanvas"></canvas>
 
 <div id="controls">
     <button id="blank">space
@@ -37,6 +36,20 @@ Your browser cannot run this canvas application.
 <script>
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // keep ship centered relative to screen
+    ship.x = canvas.width / 2 - ship.size / 2;
+    ship.y = canvas.height - 80;
+}
+
+window.addEventListener("resize", resizeCanvas);
+window.addEventListener("orientationchange", resizeCanvas);
+
+
 
 const touchKeys = {
     up: false,
@@ -92,7 +105,7 @@ const ship = {
     y: canvas.height - 80,
     size: 50
 };
-
+resizeCanvas(); // run once at start to set canvas size and ship position
 // ⭐ stars in world space
 const STAR_COUNT = 100;
 const stars = [];
@@ -133,6 +146,7 @@ function render() {
     ctx.fillStyle = "white";
 
    for (let star of stars) {
+    // Compute star position relative to the camera in world space
     let dx = star.x - camera.x;
     let dy = star.y - camera.y;
 
