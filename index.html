@@ -181,25 +181,26 @@ function render() {
     // ⭐ draw stars relative to camera
     ctx.fillStyle = "white";
 
-   for (let star of stars) {
-    // Compute star position relative to the camera in world space
-    let dx = star.x - camera.x;
-    let dy = star.y - camera.y;
+    for (let star of stars) {
+        // Compute star position relative to the camera in world space
+        let dx = star.x - camera.x;
+        let dy = star.y - camera.y;
 
-    // wrap into a repeating space (no snapping)
-    dx = ((dx + WORLD_SIZE) % WORLD_SIZE) - WORLD_SIZE / 2;
-    dy = ((dy + WORLD_SIZE) % WORLD_SIZE) - WORLD_SIZE / 2;
+        // wrap into a repeating space (no snapping)
+        dx = ((dx + WORLD_SIZE) % WORLD_SIZE) - WORLD_SIZE / 2;
+        dy = ((dy + WORLD_SIZE) % WORLD_SIZE) - WORLD_SIZE / 2;
 
-    const screenX = dx + canvas.width / 2;
-    const screenY = dy + canvas.height / 2;
+        const screenX = dx + canvas.width / 2;
+        const screenY = dy + canvas.height / 2;
 
-    ctx.fillRect(screenX, screenY, star.size, star.size);
+        ctx.fillRect(screenX, screenY, star.size, star.size);
+    }
+
     // 🧪 version number
-ctx.fillStyle = "white";
-ctx.font = "16px monospace";
-ctx.textAlign = "right";
-ctx.fillText(VERSION, canvas.width - 10, 20);
-}
+    ctx.fillStyle = "white";
+    ctx.font = "16px monospace";
+    ctx.textAlign = "right";
+    ctx.fillText(VERSION, canvas.width - 10, 20);
 
     // 🚀 ship (fixed HUD position)
     ctx.fillStyle = "red";
