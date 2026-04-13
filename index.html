@@ -18,8 +18,30 @@ button {
     font-size: 20px;
     margin: 5px;
 }
-</style>   
+#joystick {
+    position: fixed;
+    bottom: 40px;
+    left: 40px;
+    width: 120px;
+    height: 120px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    touch-action: none;
+}
 
+#stick {
+    position: absolute;
+    left: 35px;
+    top: 35px;
+    width: 50px;
+    height: 50px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 50%;
+}
+</style>   
+<div id="joystick">
+    <div id="stick"></div>
+</div>
 <canvas id="myCanvas"></canvas>
 
 <script>
@@ -48,35 +70,52 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("keyup", (e) => {
     keys[e.key.toLowerCase()] = false;
 });
+const joystick = document.getElementById("joystick");
+const stick = document.getElementById("stick");
 
-let isTouching = false;
-let lastTouchX = 0;
-let lastTouchY = 0;
+let joyActive = false;
+let joyX = 0;
+let joyY = 0;
 
-canvas.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    isTouching = true;
-
-    const touch = e.touches[0];
-    lastTouchX = touch.clientX;
-    lastTouchY = touch.clientY;
+const JOY_RADIUS = 60;
+canvas.style.touchAction = "none";
+joystick.addEventListener("touchstart", (e) => {
+    joyActive = true;
 });
 
-canvas.addEventListener("touchmove", (e) => {
+joystick.addEventListener("touchmove", (e) => {
     e.preventDefault();
-    if (!isTouching) return;
 
+    const rect = joystick.getBoundingClientRect();
     const touch = e.touches[0];
 
-    const dx = touch.clientX - lastTouchX;
-    const dy = touch.clientY - lastTouchY;
+    let x = touch.clientX - rect.left - JOY_RADIUS;
+    let y = touch.clientY - rect.top - JOY_RADIUS;
 
-    // move camera opposite to drag (feels natural)
-    camera.x -= dx * 0.5;
-    camera.y -= dy * 0.5;
+    const dist = Math.sqrt(x*x + y*y);
 
-    lastTouchX = touch.clientX;
-    lastTouchY = touch.clientY;
+    // limit to circle
+    if (dist > JOY_RADIUS) {
+        x = (x / dist) * JOY_RADIUS;
+        y = (y / dist) * JOY_RADIUS;
+    }
+
+    joyX = x / JOY_RADIUS;
+    joyY = y / JOY_RADIUS;
+
+    // move stick visually
+    stick.style.left = (x + JOY_RADIUS - 25) + "px";
+    stick.style.top = (y + JOY_RADIUS - 25) + "px";
+});
+
+joystick.addEventListener("touchend", () => {
+    joyActive = false;
+    joyX = 0;
+    joyY = 0;
+
+    // reset stick
+    stick.style.left = "35px";
+    stick.style.top = "35px";
 });
 
 canvas.addEventListener("touchend", () => {
@@ -129,6 +168,9 @@ function update() {
     if (keys["d"] || keys["arrowright"]) camera.x += camera.speed;
 
     wrapCamera();
+    // joystick movement
+    camera.x += joyX * camera.speed * 2;
+    camera.y += joyY * camera.speed * 2;
 }
 
 function render() {
